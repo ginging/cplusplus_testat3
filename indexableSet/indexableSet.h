@@ -1,10 +1,3 @@
-/*
- * indexableSet.h
- *
- *  Created on: 2 Dec 2015
- *      Author: ginging
- */
-
 #ifndef INDEXABLESET_H_
 #define INDEXABLESET_H_
 #include <set>
