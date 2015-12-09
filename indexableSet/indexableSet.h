@@ -3,25 +3,19 @@
 #include <set>
 #include <iterator>
 #include <iostream>
+#include <stdexcept>
 
 template <typename T, typename COMPARE=std::less<T>> class IndexableSet :public std::set<T, COMPARE>
 {
-	using IndexableSetType = std::set<T, COMPARE>;
-	using size_type = typename IndexableSetType::size_type;
 	using std::set<T, COMPARE>::set;
 
-	//IndexableSet()=default;
-
-	//IndexableSet<T, COMPARE> iSet{};
-
-
 public:
-	T const & front(){
+	T const & front() const{
 		return *this->begin();
 	}
 
-	T const & back(){
-		return *this->end();
+	T const & back() const{
+		return *(--this->end());
 	}
 
 	T const & at(int index) const {
@@ -38,13 +32,10 @@ public:
 		return *positionIterator;
 	}
 
-	decltype(auto) operator[](size_type index) const {
+	T const & operator[](int index) const {
 		return this->at(index);
 	}
 
-	decltype(auto) operator[](size_type index) {
-			return this->at(index);
-	}
 };
 
 

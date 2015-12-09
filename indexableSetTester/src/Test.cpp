@@ -1,8 +1,44 @@
+#include <vector>
+#include <algorithm>
 #include "cute.h"
 #include "ide_listener.h"
 #include "xml_listener.h"
 #include "cute_runner.h"
 #include "indexableSet.h"
+
+struct CaselessComparator {
+	bool operator() (const std::string &str1, const std::string &str2) const {
+		return std::lexicographical_compare(str1.begin(), str1.end(), str2.begin(), str2.end(), [](char l, char r){
+			return std::tolower(l) < std::tolower(r);
+		});
+	}
+};
+
+void testDefaultConstructor() {
+	IndexableSet<int> indexSet{};
+	indexSet.insert(1);
+	ASSERT_EQUAL(1, indexSet[0] );
+}
+void testRangeConstructor() {
+	std::vector<int> myInts = {1, 2, 3, 4, 5};
+	IndexableSet<int> indexSet(myInts.begin() , myInts.end());
+	ASSERT_EQUAL(3, indexSet[2]);
+}
+void testCopyConstructor() {
+	IndexableSet<int> indexSet {1, 2, 3, 4, 5};
+	IndexableSet<int> copiedIndexSet(indexSet);
+	ASSERT_EQUAL(3, indexSet[2]);
+}
+void testMoveConstructor() {
+	IndexableSet<int> indexSet {1, 2, 3, 4, 5};
+	IndexableSet<int> moveIndexSet(std::move(indexSet));
+	ASSERT_EQUAL(3, moveIndexSet[2]);
+}
+
+void testCaselessCompare() {
+	IndexableSet<std::string, CaselessComparator> indexSet {"hallo","Hallo","Test","taste"};
+	ASSERT_EQUAL(3, indexSet.size());
+}
 
 void testIndexSetFrontWithInt() {
 	IndexableSet<int> indexSet{1,2,3,4};
@@ -87,10 +123,13 @@ void testPositiveIndexBorder() {
 	ASSERT_THROWS(indexSet[4], std::out_of_range);
 }
 void testNestedIndexableSets() {
-	IndexableSet<IndexableSet> indexSet{IndexableSet<int> indexSet12{1,2}, IndexableSet<int> indexSet13{3,4}};
+	IndexableSet<int> indexSet12{1,2};
+	IndexableSet<int> indexSet13{3,4};
+	IndexableSet<IndexableSet<int>> indexSet{indexSet12,indexSet13};
 	int compareInt = indexSet[-1][0];
 	ASSERT_EQUAL(3, compareInt);
 }
+
 
 void runAllTests(int argc, char const *argv[]){
 	cute::suite s;
@@ -112,6 +151,11 @@ void runAllTests(int argc, char const *argv[]){
 	s.push_back(CUTE(testNegativeIndexBorder));
 	s.push_back(CUTE(testPositiveIndexBorder));
 	s.push_back(CUTE(testNestedIndexableSets));
+	s.push_back(CUTE(testDefaultConstructor));
+	s.push_back(CUTE(testRangeConstructor));
+	s.push_back(CUTE(testCopyConstructor));
+	s.push_back(CUTE(testCaselessCompare));
+	s.push_back(CUTE(testMoveConstructor));
 	cute::xml_file_opener xmlfile(argc,argv);
 	cute::xml_listener<cute::ide_listener<> >  lis(xmlfile.out);
 	cute::makeRunner(lis,argc,argv)(s, "AllTests");
@@ -121,3 +165,5 @@ int main(int argc, char const *argv[]){
     runAllTests(argc,argv);
     return 0;
 }
+
+
